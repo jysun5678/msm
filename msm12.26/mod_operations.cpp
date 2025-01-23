@@ -4,25 +4,111 @@
 // Modular addition
 BigInteger mod_add(BigInteger a, BigInteger b, BigInteger modulus) {
     BigInteger c = a+b;
-    if (c >= modulus)return c- modulus;
-    else return c;
+    //if (c >= modulus)return c- modulus;
+    //else return c;
+    if (c.getSign()) {
+        while (c.getSign()) {
+            c = c + modulus;
+        }
+        return c;
+    }
+    else {
+        while (c >= modulus) {
+            c = c - modulus;
+        }
+        return c;
+    }
+    
 }
 
 // Modular subtraction
 BigInteger mod_sub(BigInteger a, BigInteger b, BigInteger modulus) {
-    if (a>= b) return a-b;
+    //cout << "sub:a=(" << a.getSign() << ")" << a.getNumber() << ",b=(" << b.getSign() << ")" << b.getNumber() << "\n";
+    BigInteger c = a - b;
+    //cout << "c=" << c.getNumber() << "\n";
+    /*if (a>= b) return a-b;
     else {
         BigInteger c = a+ modulus;
         return c- b;
+    }*/
+    if (c.getSign()) {
+        while (c.getSign()) {
+            c = c + modulus;
+        }
+        return c;
+    }
+    else {
+        while (c >= modulus) {
+            c = c - modulus;
+        }
+        return c;
     }
     //return (a >= b) ? (a - b) % modulus : ((a % modulus) + modulus - (b % modulus)) % modulus;
 }
 
 // Modular multiplication
-BigInteger mod_mul(BigInteger a, BigInteger b, BigInteger modulus) {
+/*BigInteger mod_mul(BigInteger a, BigInteger b, BigInteger modulus) {
+    cout << "start mul\n";
+    cout << "a=" << a.getSign() << a.getNumber() << ",b=" << b.getSign() << b.getNumber() << "\n";
     BigInteger result;
     BigInteger c = a*b;
+    cout << "c=" << c.getSign() << c.getNumber() << "\n";
     result=c%modulus;
+    cout << "mul_result=" << result.getSign() << result.getNumber() << "\n";
+    return result;
+}*/
+BigInteger mod_reduc(BigInteger a, int b, BigInteger modulus) {
+    BigInteger result, temp;
+    result = BigInteger();
+    temp = a;
+    while (b != 0) {
+        if (b % 2 == 1) {
+            result = mod_add(result, temp, modulus);
+        }
+        b = b >> 1;
+        temp= mod_add(temp, temp, modulus);
+    }
+    return result;
+}
+
+
+BigInteger mod_mul(BigInteger a, BigInteger b, BigInteger modulus) {
+    string q = b.getNumber();
+    int len = q.length();
+    //cout << "len=" << len << "\n";
+    BigInteger result, temp;
+    result = BigInteger();
+    for (int i = 0; i < len; i++) {
+        char c = q[i];
+        int c1 = c - '0';
+        //cout << "c=" << c << "c1=" << c1 << "\n";
+        c1 = c1 * int(pow(10,i));
+        //BigInteger c2 = BigInteger(c1);
+        //temp = (a*c2)%modulus;
+        temp = mod_reduc(a, c1, modulus);
+        result = mod_add(result, temp, modulus);
+    }
+    //cout << "a*b=" << a.getNumber() << "*" << b.getNumber() << "=" << result.getNumber() << "\n";
+    return result;
+}
+
+BigInteger barret(BigInteger a, BigInteger b, BigInteger modulus) {
+    cout << "a=("<<a.getSign()<<")" << a.getNumber() << ",b=(" << b.getSign() << ")" << b.getNumber() << "\n";
+    BigInteger ab = a * b;
+
+    int k = 2 * (modulus.len());
+    //cout << "k=" << k << "\n";
+    BigInteger k2= BigInteger(1);
+    for (int i = 0; i < k; i++) {
+        k2 = k2 * BigInteger(2);
+    }
+    //cout << "k2=" << k2.getNumber() << "\n";
+    BigInteger m = k2 / modulus;
+    //cout << "m=" << m.getNumber() << "\n";
+    BigInteger t = (ab * m) >> k;
+    //cout << "t=("<<t.getSign()<<")" << t.getNumber() << "\n";
+    BigInteger result = mod_sub(ab , t * modulus,modulus);
+    cout << "result=" << result.getNumber() << "\n";
     return result;
 }
 
@@ -94,7 +180,7 @@ BigInteger mod_inv(BigInteger a, BigInteger P, BigInteger* u, BigInteger* v)
     *u = _v - t;
     *v = _u;
 
-   /* cout << "a*u+p*v=";
+    /*cout << "a*u+p*v=";
     if (a.getSign())cout << "-" << a.getNumber() ;
     else cout <<  a.getNumber() ;
     cout << "*";

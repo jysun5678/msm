@@ -45,6 +45,7 @@ public:
     BigInteger& operator%=(BigInteger b);
     BigInteger operator-(); // unary minus sign
     operator string();      // for conversion from BigInteger to string
+    int len();
 
 private:
     bool equals(BigInteger n1, BigInteger n2);
@@ -56,4 +57,5 @@ private:
     pair<string, long long> divide(string n, long long den);
     string toString(long long n);
     long long toInt(string s);
+    BigInteger average(BigInteger a, BigInteger b);
 };

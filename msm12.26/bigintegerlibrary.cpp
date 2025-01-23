@@ -218,7 +218,7 @@ BigInteger BigInteger::operator*(BigInteger b)
 
     return div;
 }*/
-BigInteger BigInteger::operator/(BigInteger b)
+/*BigInteger BigInteger::operator/(BigInteger b)
 {
     //long long den = toInt(b.getNumber());
     BigInteger div= BigInteger();
@@ -227,7 +227,8 @@ BigInteger BigInteger::operator/(BigInteger b)
         cout << "cannot div by 0!\n";
         return BigInteger();
     }
-    else if (toInt(b.getNumber()) < 2147483648) {//within "int" size
+    //else if (toInt(b.getNumber()) < 2147483648) {//within "int" size
+    else if (b < BigInteger("2147483648")) {
         //cout << "x/y:  x=" << getNumber() << ",y=" << b.getNumber() << "!\n";
         div.setNumber(divide(getNumber(), toInt(b.getNumber())).first);
         div.setSign(getSign() != b.getSign());
@@ -240,21 +241,65 @@ BigInteger BigInteger::operator/(BigInteger b)
     else {
         BigInteger x = BigInteger(getNumber(), 0);
         BigInteger y = BigInteger(b.getNumber(), 0);
-        //cout << "x/y:  x=" << x.getNumber() << ",y=" << y.getNumber() << "!\n";
+        cout << "x/y:  x=" << x.getNumber() << ",y=" << y.getNumber() << "!\n";
         //compute x/y
         while (x >= y) {
             x = x - y;
             if(!div.getSign())div++;
             else div--;
-            //cout << "div=" << div.getNumber() << "\n";
+            cout << "div=" << div.getNumber() << "\n";
         }
         if (div.getNumber() == "0") {
             div.setSign(false);
         }
-        //cout << "x/y=" << div.getNumber()  << "\n";
+        cout << "x/y=" << div.getNumber()  << "\n";
         return div;
     }
+}*/
+BigInteger BigInteger::operator/(BigInteger b) {//Binary Search Method
+    int m = len();
+    int n = b.len();
+    int high = m - n + 1;
+    int low = m - n - 1;
+    int medium=m-n;
+    //cout << "x/y:  x=" << getNumber() << ",y=" << b.getNumber() << "x_len="<<m<<",y_len="<<n << "\n";
+    //initial range of the result is (2^low,2^high)
+    BigInteger div = BigInteger();
+    BigInteger max= BigInteger(1), min= BigInteger(1);
+    div.setSign(getSign() != b.getSign());
+    if (b == BigInteger()) {
+        cout << "cannot div by 0!\n";
+        return BigInteger();
+    }
+    else if (m<n) {
+        return BigInteger();
+    }
+    else if (m == n) {
+        if((*this)<b)return BigInteger();
+        else return BigInteger(1);
+    }
+    else {
+        //cout << "m=" << m << ",n=" << n << "\n";
+        for (int i = 0; i < high; i++) {
+            //max = max * BigInteger(2);
+            max = max + max;
+        }
+        for (int i = 0; i < low; i++) {
+            //min = min * BigInteger(2);
+            min = min + min;
+        }
+        //cout << "max=" << max.getNumber() << ",min=" << min.getNumber() << "\n";
+        while ((max - min)>= BigInteger(2)) {
+            
+            BigInteger temp = average(min,max);
+            //cout << "temp=" << temp.getNumber()<<",min="<<min.getNumber()<<",max="<<max.getNumber()<<"\n";
+            if (temp*b <= (*this))min = temp;
+            else max = temp;
+        }
+        return min;
+    }
 }
+
 
 // Warning: Denomerator must be within "long long" size not "BigInteger"
 /*BigInteger BigInteger::operator%(BigInteger b)
@@ -271,7 +316,7 @@ BigInteger BigInteger::operator/(BigInteger b)
     if (rem.getSign())return rem + b;
     else return rem;
 }*/
-BigInteger BigInteger::operator%(BigInteger b)
+/*BigInteger BigInteger::operator%(BigInteger b)
 {
     //long long den = toInt(b.getNumber());
 
@@ -282,8 +327,10 @@ BigInteger BigInteger::operator%(BigInteger b)
         //cout << "modulus cannot be negative!\n";
        // return BigInteger();
     //}
-    //cout << "x%y:  x=" << x.getNumber() << ",y=" << y.getNumber() << "!\n";
-    if (toInt(b.getNumber()) < 2147483648) {//within "int" size
+    cout << "x%y:  x="<<x.getSign() << x.getNumber() << ",y=" << y.getSign() << y.getNumber() << "!\n";
+    //if (toInt(b.getNumber()) < 2147483648) {//within "int" size
+    if (y < BigInteger("2147483648")) {//within "int" size
+        cout << "0000\n";
         long long den = toInt(b.getNumber());
 
         //BigInteger rem;
@@ -298,18 +345,21 @@ BigInteger BigInteger::operator%(BigInteger b)
     }
     else {
         if (getSign() == 0&&b.getSign()==0) {
+            cout << "1111\n";
             while (x >= y) {
                 x = x - y;
             }
             rem = x;
         }
         else if (getSign() == 0 && b.getSign()==1) {
+            cout << "2222\n";
             while (x > BigInteger()) {
                 x = x - y;
             }
             rem = x;
         }
         else if (getSign() == 1 && b.getSign() == 1) {
+            cout << "3333\n";
             while (x < BigInteger()) {
                 x = x + y;
             }
@@ -317,25 +367,49 @@ BigInteger BigInteger::operator%(BigInteger b)
         }
         else {
             while (x.getSign()) {
+                cout << "4444\n";
                 x = x + y;
+                cout << "  x=" << x.getSign() << x.getNumber() << "\n";
             }
             rem = x;
         }
         //cout << "x%y=" << rem.getNumber() << "\n";
         return rem;
     }
+}*/
+BigInteger BigInteger::operator%(BigInteger b) {
+
+    if (b > (*this)) {
+        if (getSign()) {
+            BigInteger div = (*this) / b;
+            BigInteger result =  div * b-(*this) ;
+            return result;
+        }
+        else return (*this);
+    }
+    else {
+        BigInteger div = (*this) / b;
+        BigInteger result = (*this) - div * b;
+        return result;
+    }
 }
 
 
 BigInteger BigInteger::operator>>(unsigned b)
 {
-    BigInteger b1 = BigInteger(2 ^ b);
+    BigInteger b1 = (*this);
     if(b==0)return (*this);
-    else if ((*this) >= b1)
+    else if (b >= 1)
     {
         //(*this) = (*this) / (2 ^ b);
-        (*this) = (*this) / b1;
-        return (*this);
+        while (b > 0) {
+            //(*this) = (*this) / b1;
+            string s = b1.getNumber();
+            s = divide(s,2).first;
+            b1 = BigInteger(s);
+            b=b-1;
+        }
+        return b1;
     }
     else {
         BigInteger c = BigInteger();
@@ -383,6 +457,24 @@ BigInteger::operator string()
     string signedString = (getSign()) ? "-" : ""; // if +ve, don't print + sign
     signedString += number;
     return signedString;
+}
+
+int BigInteger::len()
+{ 
+    int len=0;
+    string s = getNumber();
+    int s_len = s.length();
+    BigInteger t = (*this);
+    while (s_len != 0) {
+        //t = t >> 1;
+        //cout << "s=" << s << "\n";
+        s = divide(s, 2).first;
+        len++;
+        if (s != "0")s_len = s.length();
+        else s_len = 0;
+        //cout <<"s_len="<< s_len << ",len=" << len << "\n";
+    }
+    return len;
 }
 
 bool BigInteger::equals(BigInteger n1, BigInteger n2)
@@ -575,4 +667,22 @@ long long BigInteger::toInt(string s)
         sum = (sum * 10) + (s[i] - '0');
 
     return sum;
+}
+
+BigInteger BigInteger::average(BigInteger a, BigInteger b)
+{
+    //cout << "start average\n";
+    BigInteger sum = a + b;
+    /*BigInteger min;
+    if (a <= b)min = a;
+    else min = b;
+    while (min * BigInteger(2) < sum) {
+         min++;
+         cout
+    }*/
+    string s = sum.getNumber();
+    s = divide(s, 2).first;
+    BigInteger result = BigInteger(s, sum.getSign());
+    //cout << "a=" << a.getNumber() << ",b=" << b.getNumber() << "    result=" << result.getNumber() << "\n";
+    return result;
 }
